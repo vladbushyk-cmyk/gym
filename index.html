@@ -1,0 +1,329 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101512">
+<title>Gym Progress — трекер тренувань</title>
+<style>
+:root{--bg:#0d120f;--panel:#151d18;--panel2:#1c2720;--line:#2b3a30;--text:#edf5ee;--muted:#9bad9f;--green:#65d58b;--green2:#183d29;--red:#ff7777}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% -10%,#1d3827 0,transparent 32%),var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif}
+.wrap{max-width:1050px;margin:auto;padding:22px 16px 60px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+.brand{font-weight:850;font-size:22px}.brand span{color:var(--green)}
+.sub{color:var(--muted);font-size:13px}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0}
+button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:10px 14px;font-weight:650;cursor:pointer}
+.tab.active,button.primary{background:var(--green);color:#092012;border-color:var(--green)}
+button.danger{color:var(--red)}
+button.small{padding:6px 10px;font-size:12px}
+.panel{background:linear-gradient(145deg,var(--panel),#121914);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
+h1{font-size:26px;line-height:1.2;margin:4px 0 5px}
+h2{font-size:18px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:var(--panel2);border:1px solid var(--line);padding:15px;border-radius:14px}
+.stat b{font-size:25px;display:block}
+.stat span{color:var(--muted);font-size:12px}
+label{display:block;color:var(--muted);font-size:12px;margin:0 0 5px}
+input{width:100%;background:#0e1511;border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--text);font:inherit;min-width:0}
+input:focus{outline:2px solid #65d58b55;border-color:var(--green)}
+.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.field{flex:1;min-width:140px}
+.exercise{background:#101812;border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.setrow{display:grid;grid-template-columns:35px 1fr 1fr 34px;gap:8px;align-items:end;margin:8px 0}
+.setnum{color:var(--muted);padding:10px 0}
+.hint{font-size:12px;color:var(--muted)}
+.hidden{display:none!important}
+.calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dayname,.day{font-size:12px;text-align:center;padding:9px 0;border-radius:9px}
+.dayname{color:var(--muted)}
+.day{background:#101812;border:1px solid #243229;color:#829287;min-height:37px}
+.day.done{background:var(--green2);border-color:#347d4e;color:#a9f4bf;font-weight:800}
+.day.today{outline:1px solid var(--green)}
+.day.blank{background:transparent;border:0}
+.session{padding:13px 0;border-top:1px solid var(--line)}
+.session-title{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.pill{font-size:11px;color:#aaf0be;background:var(--green2);padding:4px 8px;border-radius:99px}
+.progressbar{height:8px;background:#26342b;border-radius:20px;overflow:hidden;margin-top:8px}
+.progressbar i{display:block;height:100%;background:var(--green)}
+.empty{text-align:center;color:var(--muted);padding:28px 8px}
+.notice{font-size:12px;color:var(--muted)}
+@media(max-width:650px){
+.grid{grid-template-columns:1fr 1fr}
+.wrap{padding:16px 12px 45px}
+.panel{padding:14px}
+.setrow{grid-template-columns:24px 1fr 1fr 30px;gap:5px}
+.setrow input{padding:9px 6px}
+.top{align-items:flex-start;flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+<div><div class="brand">GYM<span>PROGRESS</span></div><div class="sub">Твій тренувальний журнал</div></div>
+<div class="sub" id="saveStatus">Дані зберігаються на цьому пристрої</div>
+</div>
+
+<nav>
+<button class="tab active" data-tab="dashboard">Огляд</button>
+<button class="tab" data-tab="add">Додати тренування</button>
+<button class="tab" data-tab="history">Історія</button>
+<button class="tab" data-tab="progress">Прогрес вправ</button>
+</nav>
+
+<section id="dashboard">
+<div class="panel">
+<h1>Твій прогрес — у цифрах</h1>
+<div class="sub">Фіксуй підходи, відстежуй регулярність і порівнюй результати.</div>
+</div>
+<div class="grid">
+<div class="stat"><b id="totalWorkouts">0</b><span>Усього тренувань</span></div>
+<div class="stat"><b id="monthWorkouts">0</b><span>Цього місяця</span></div>
+<div class="stat"><b id="exerciseCount">0</b><span>Різних вправ</span></div>
+</div>
+<div class="panel" style="margin-top:16px">
+<div class="calendar-head">
+<button class="small" id="prevMonth">←</button>
+<h2 id="monthLabel" style="margin:0"></h2>
+<button class="small" id="nextMonth">→</button>
+</div>
+<div class="calendar" id="calendar"></div>
+<div class="hint" style="margin-top:10px">🟩 Зелений день — у цей день було збережено тренування.</div>
+</div>
+<div class="panel"><h2>Останні тренування</h2><div id="recent"></div></div>
+</section>
+
+<section id="add" class="hidden">
+<div class="panel">
+<h1>Нове тренування</h1>
+<p class="sub">Вкажи дату, вправи та окремі значення для кожного підходу.</p>
+<div class="field" style="max-width:220px">
+<label for="workoutDate">Дата тренування</label>
+<input type="date" id="workoutDate">
+</div>
+<div id="exerciseList"></div>
+<button id="addExercise" style="margin:8px 0">＋ Додати вправу</button>
+<div class="row" style="justify-content:flex-end;margin-top:14px">
+<button class="primary" id="saveWorkout">Зберегти тренування</button>
+</div>
+<p class="hint" id="formMessage"></p>
+</div>
+</section>
+
+<section id="history" class="hidden">
+<div class="panel"><h1>Історія</h1><div id="historyList"></div></div>
+</section>
+
+<section id="progress" class="hidden">
+<div class="panel">
+<h1>Прогрес за вправами</h1>
+<p class="sub">Порівнюється твій найкращий підхід за показником вага × повторення.</p>
+<div id="progressList"></div>
+</div>
+</section>
+
+<div class="notice">Порівнюй однакову вправу з однаковою технікою та амплітудою. Відсоток — це зміна твого записаного результату, а не оцінка сили відносно інших людей.</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let workouts=JSON.parse(localStorage.getItem('gymprogress_v1')||'[]');
+let calDate=new Date();
+let draftCount=0;
+const today=()=>new Date().toISOString().slice(0,10);
+
+$('#workoutDate').value=today();
+
+function save(){
+localStorage.setItem('gymprogress_v1',JSON.stringify(workouts));
+$('#saveStatus').textContent='Збережено ✓';
+}
+
+function showTab(name){
+document.querySelectorAll('section').forEach(s=>s.classList.toggle('hidden',s.id!==name));
+document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+renderAll();
+}
+
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+
+function escapeHtml(s){
+return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function addExercise(name=''){
+draftCount++;
+const box=document.createElement('div');
+box.className='exercise';
+box.innerHTML=`
+<div class="row">
+<div class="field">
+<label>Назва вправи</label>
+<input class="exname" placeholder="Напр. Жим у тренажері" value="${escapeHtml(name)}">
+</div>
+<button class="small danger removeExercise">Видалити</button>
+</div>
+<div class="sets"></div>
+<button class="small addSet" style="margin-top:8px">＋ Додати підхід</button>`;
+$('#exerciseList').append(box);
+box.querySelector('.addSet').onclick=()=>addSet(box);
+box.querySelector('.removeExercise').onclick=()=>box.remove();
+addSet(box);
+addSet(box);
+}
+
+function addSet(box,w='',r=''){
+const n=box.querySelectorAll('.setrow').length+1;
+const row=document.createElement('div');
+row.className='setrow';
+row.innerHTML=`
+<div class="setnum">${n}</div>
+<div><label>Вага, кг</label><input class="weight" type="number" min="0" step="0.25" placeholder="0" value="${w}"></div>
+<div><label>Повторення</label><input class="reps" type="number" min="1" step="1" placeholder="0" value="${r}"></div>
+<button class="small danger delSet">×</button>`;
+row.querySelector('.delSet').onclick=()=>{
+row.remove();
+renumber(box);
+};
+box.querySelector('.sets').append(row);
+}
+
+function renumber(box){
+box.querySelectorAll('.setnum').forEach((e,i)=>e.textContent=i+1);
+}
+
+$('#addExercise').onclick=()=>addExercise();
+addExercise();
+
+$('#saveWorkout').onclick=()=>{
+const date=$('#workoutDate').value;
+const exercises=[];
+
+document.querySelectorAll('#exerciseList .exercise').forEach(box=>{
+const name=box.querySelector('.exname').value.trim();
+const sets=[...box.querySelectorAll('.setrow')].map(r=>({
+weight:Number(r.querySelector('.weight').value),
+reps:Number(r.querySelector('.reps').value)
+})).filter(s=>s.weight>0&&s.reps>0);
+
+if(name&&sets.length)exercises.push({name,sets});
+});
+
+if(!date||!exercises.length){
+$('#formMessage').textContent='Вкажи дату, назву вправи та хоча б один заповнений підхід.';
+return;
+}
+
+workouts.push({id:Date.now(),date,exercises});
+workouts.sort((a,b)=>a.date.localeCompare(b.date));
+save();
+$('#formMessage').textContent='Тренування збережено!';
+$('#exerciseList').innerHTML='';
+addExercise();
+$('#workoutDate').value=today();
+showTab('dashboard');
+};
+
+function allNames(){
+return [...new Set(workouts.flatMap(w=>w.exercises.map(e=>e.name)))];
+}
+
+function score(ex){
+return Math.max(...ex.sets.map(s=>s.weight*s.reps));
+}
+
+function fmtDate(d){
+return new Date(d+'T12:00:00').toLocaleDateString('uk-UA',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function renderCalendar(){
+const y=calDate.getFullYear(),m=calDate.getMonth();
+$('#monthLabel').textContent=calDate.toLocaleDateString('uk-UA',{month:'long',year:'numeric'});
+const first=new Date(y,m,1).getDay();
+const offset=(first+6)%7;
+const days=new Date(y,m+1,0).getDate();
+const done=new Set(workouts.map(w=>w.date));
+let out=['Пн','Вт','Ср','Чт','Пт','Сб','Нд'].map(x=>`<div class="dayname">${x}</div>`).join('');
+
+for(let i=0;i<offset;i++)out+='<div class="day blank"></div>';
+
+for(let d=1;d<=days;d++){
+const key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+out+=`<div class="day ${done.has(key)?'done':''} ${key===today()?'today':''}">${d}${done.has(key)?' ✓':''}</div>`;
+}
+$('#calendar').innerHTML=out;
+}
+
+$('#prevMonth').onclick=()=>{
+calDate.setMonth(calDate.getMonth()-1);
+renderCalendar();
+};
+
+$('#nextMonth').onclick=()=>{
+calDate.setMonth(calDate.getMonth()+1);
+renderCalendar();
+};
+
+function workoutHtml(w,del=false){
+return `<div class="session">
+<div class="session-title">
+<strong>${fmtDate(w.date)}</strong>
+${del?`<button class="small danger" onclick="deleteWorkout(${w.id})">Видалити</button>`:'<span class="pill">Тренування</span>'}
+</div>
+${w.exercises.map(e=>`
+<div style="margin-top:8px">
+<b>${escapeHtml(e.name)}</b>
+<div class="hint">${e.sets.map((s,i)=>`П${i+1}: ${s.weight} кг × ${s.reps}`).join('　·　')}</div>
+</div>`).join('')}
+</div>`;
+}
+
+function deleteWorkout(id){
+if(confirm('Видалити це тренування?')){
+workouts=workouts.filter(w=>w.id!==id);
+save();
+renderAll();
+}
+}
+
+function renderAll(){
+$('#totalWorkouts').textContent=workouts.length;
+const ym=today().slice(0,7);
+$('#monthWorkouts').textContent=workouts.filter(w=>w.date.startsWith(ym)).length;
+$('#exerciseCount').textContent=allNames().length;
+renderCalendar();
+
+const recent=[...workouts].reverse().slice(0,3);
+$('#recent').innerHTML=recent.length?recent.map(w=>workoutHtml(w)).join(''):'<div class="empty">Поки немає тренувань. Додай перше!</div>';
+
+const sorted=[...workouts].reverse();
+$('#historyList').innerHTML=sorted.length?sorted.map(w=>workoutHtml(w,true)).join(''):'<div class="empty">Історія поки порожня.</div>';
+
+const names=allNames();
+$('#progressList').innerHTML=names.length?names.map(name=>{
+const entries=workouts.flatMap(w=>w.exercises.filter(e=>e.name.toLowerCase()===name.toLowerCase()).map(e=>({date:w.date,score:score(e)}))).sort((a,b)=>a.date.localeCompare(b.date));
+const first=entries[0];
+const best=entries.reduce((a,b)=>b.score>a.score?b:a,entries[0]);
+const latest=entries[entries.length-1];
+const change=first.score?((best.score/first.score)-1)*100:0;
+
+return `<div class="session">
+<div class="session-title">
+<b>${escapeHtml(name)}</b>
+<span class="pill">${change>=0?'+':''}${change.toFixed(1)}% від першого запису</span>
+</div>
+<div class="hint">Перший: ${first.score.toFixed(1)} · Найкращий: ${best.score.toFixed(1)} · Останній: ${latest.score.toFixed(1)} кг × повторення</div>
+<div class="progressbar"><i style="width:${Math.max(2,Math.min(100,100+change))}%"></i></div>
+<div class="hint">Останній запис: ${fmtDate(latest.date)}. Показник = вага × повторення.</div>
+</div>`;
+}).join(''):'<div class="empty">Додай кілька тренувань, щоб побачити динаміку.</div>';
+}
+
+renderAll();
+</script>
+</body>
+</html>
