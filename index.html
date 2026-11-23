@@ -1,329 +1,69 @@
-
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#101512">
-<title>Gym Progress — трекер тренувань</title>
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101713"><title>FORGE — Fitness Tracker</title>
 <style>
-:root{--bg:#0d120f;--panel:#151d18;--panel2:#1c2720;--line:#2b3a30;--text:#edf5ee;--muted:#9bad9f;--green:#65d58b;--green2:#183d29;--red:#ff7777}
-*{box-sizing:border-box}
-body{margin:0;background:radial-gradient(circle at 80% -10%,#1d3827 0,transparent 32%),var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif}
-.wrap{max-width:1050px;margin:auto;padding:22px 16px 60px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
-.brand{font-weight:850;font-size:22px}.brand span{color:var(--green)}
-.sub{color:var(--muted);font-size:13px}
-nav{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0}
-button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:10px 14px;font-weight:650;cursor:pointer}
-.tab.active,button.primary{background:var(--green);color:#092012;border-color:var(--green)}
-button.danger{color:var(--red)}
-button.small{padding:6px 10px;font-size:12px}
-.panel{background:linear-gradient(145deg,var(--panel),#121914);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
-h1{font-size:26px;line-height:1.2;margin:4px 0 5px}
-h2{font-size:18px;margin:0 0 14px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.stat{background:var(--panel2);border:1px solid var(--line);padding:15px;border-radius:14px}
-.stat b{font-size:25px;display:block}
-.stat span{color:var(--muted);font-size:12px}
-label{display:block;color:var(--muted);font-size:12px;margin:0 0 5px}
-input{width:100%;background:#0e1511;border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--text);font:inherit;min-width:0}
-input:focus{outline:2px solid #65d58b55;border-color:var(--green)}
-.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
-.field{flex:1;min-width:140px}
-.exercise{background:#101812;border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
-.setrow{display:grid;grid-template-columns:35px 1fr 1fr 34px;gap:8px;align-items:end;margin:8px 0}
-.setnum{color:var(--muted);padding:10px 0}
-.hint{font-size:12px;color:var(--muted)}
-.hidden{display:none!important}
-.calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.dayname,.day{font-size:12px;text-align:center;padding:9px 0;border-radius:9px}
-.dayname{color:var(--muted)}
-.day{background:#101812;border:1px solid #243229;color:#829287;min-height:37px}
-.day.done{background:var(--green2);border-color:#347d4e;color:#a9f4bf;font-weight:800}
-.day.today{outline:1px solid var(--green)}
-.day.blank{background:transparent;border:0}
-.session{padding:13px 0;border-top:1px solid var(--line)}
-.session-title{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.pill{font-size:11px;color:#aaf0be;background:var(--green2);padding:4px 8px;border-radius:99px}
-.progressbar{height:8px;background:#26342b;border-radius:20px;overflow:hidden;margin-top:8px}
-.progressbar i{display:block;height:100%;background:var(--green)}
-.empty{text-align:center;color:var(--muted);padding:28px 8px}
-.notice{font-size:12px;color:var(--muted)}
-@media(max-width:650px){
-.grid{grid-template-columns:1fr 1fr}
-.wrap{padding:16px 12px 45px}
-.panel{padding:14px}
-.setrow{grid-template-columns:24px 1fr 1fr 30px;gap:5px}
-.setrow input{padding:9px 6px}
-.top{align-items:flex-start;flex-direction:column}
-}
-</style>
-</head>
-<body>
-<div class="wrap">
-<div class="top">
-<div><div class="brand">GYM<span>PROGRESS</span></div><div class="sub">Твій тренувальний журнал</div></div>
-<div class="sub" id="saveStatus">Дані зберігаються на цьому пристрої</div>
-</div>
-
-<nav>
-<button class="tab active" data-tab="dashboard">Огляд</button>
-<button class="tab" data-tab="add">Додати тренування</button>
-<button class="tab" data-tab="history">Історія</button>
-<button class="tab" data-tab="progress">Прогрес вправ</button>
-</nav>
-
-<section id="dashboard">
-<div class="panel">
-<h1>Твій прогрес — у цифрах</h1>
-<div class="sub">Фіксуй підходи, відстежуй регулярність і порівнюй результати.</div>
-</div>
-<div class="grid">
-<div class="stat"><b id="totalWorkouts">0</b><span>Усього тренувань</span></div>
-<div class="stat"><b id="monthWorkouts">0</b><span>Цього місяця</span></div>
-<div class="stat"><b id="exerciseCount">0</b><span>Різних вправ</span></div>
-</div>
-<div class="panel" style="margin-top:16px">
-<div class="calendar-head">
-<button class="small" id="prevMonth">←</button>
-<h2 id="monthLabel" style="margin:0"></h2>
-<button class="small" id="nextMonth">→</button>
-</div>
-<div class="calendar" id="calendar"></div>
-<div class="hint" style="margin-top:10px">🟩 Зелений день — у цей день було збережено тренування.</div>
-</div>
-<div class="panel"><h2>Останні тренування</h2><div id="recent"></div></div>
+:root{--bg:#0c120e;--p:#151e18;--p2:#1d2a21;--line:#304035;--t:#eef6ef;--m:#9daf9f;--g:#74e39a;--gd:#173c27;--o:#f0c477}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#23432d,transparent 38%),var(--bg);color:var(--t);font:15px/1.5 system-ui,sans-serif}.app{max-width:1050px;margin:auto;padding:16px 12px 60px}.logo{font-size:24px;font-weight:900}.logo span{color:var(--g)}.muted,.small{color:var(--m)}.small{font-size:12px}.nav{display:flex;gap:6px;overflow:auto;position:sticky;top:0;background:#0c120ef2;padding:12px 0;z-index:3}.nav button{white-space:nowrap}button{border:1px solid var(--line);background:var(--p2);color:var(--t);border-radius:10px;padding:9px 12px;font:inherit;cursor:pointer;font-weight:650}button.primary{background:var(--g);color:#0b1b10;border-color:var(--g)}button.active{background:var(--gd);border-color:#4a9e66;color:#baf6ca}button.danger{color:#ff8585}.page{display:none}.page.active{display:block}.card{background:linear-gradient(145deg,var(--p),#111913);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:13px}h1{font-size:25px;margin:0 0 5px}h2{font-size:18px;margin:0 0 12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:var(--p2);border:1px solid var(--line);border-radius:12px;padding:12px}.stat b{font-size:23px;display:block}.stat span{font-size:11px;color:var(--m)}.row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.field{flex:1;min-width:120px}label{display:block;font-size:12px;color:var(--m);margin-bottom:4px}input,select{width:100%;background:#0c140f;color:var(--t);border:1px solid var(--line);border-radius:9px;padding:10px;font:inherit}.exercise,.foodrow{background:#101812;border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}.set{display:grid;grid-template-columns:22px 1fr 1fr 28px;gap:5px;align-items:end;margin:7px 0}.set input{padding:8px 5px}.setnum{padding:8px 0;color:var(--m)}.session{padding:11px 0;border-top:1px solid var(--line)}.session:first-child{border:0}.sessiontop{display:flex;justify-content:space-between;gap:8px;align-items:center}.pill{background:var(--gd);color:#baf6ca;border-radius:99px;padding:3px 8px;font-size:11px}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.day,.weekday{text-align:center;padding:8px 1px;border-radius:8px;font-size:12px}.weekday{color:var(--m)}.day{background:#101812;border:1px solid #253329;color:#829287}.day.done{background:var(--gd);border-color:#398653;color:#baf6ca}.day.today{outline:1px solid var(--g)}.notice{border-left:3px solid var(--o);background:#30271955;padding:9px;border-radius:6px;font-size:12px;color:#dfcca5;margin:10px 0}.empty{text-align:center;padding:20px;color:var(--m)}canvas{width:100%;height:200px;background:#0f1711;border:1px solid var(--line);border-radius:10px}.hidden{display:none!important}.footer{font-size:11px;color:var(--m);text-align:center;margin:18px}
+@media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.app{padding:12px 10px}.card{padding:12px}.logo{font-size:22px}}
+</style></head><body><div class="app">
+<header><div class="logo">FORGE<span>.</span></div><div class="small">Тренування · Харчування · Особиста аналітика</div><div class="small" id="saveState">Дані зберігаються на цьому пристрої</div></header>
+<nav><button class="active" data-page="home">Огляд</button><button data-page="workouts">Тренування</button><button data-page="history">Історія</button><button data-page="food">Харчування</button><button data-page="stats">Аналітика</button><button data-page="profile">Профіль</button></nav>
+<section id="home" class="page active">
+<div class="card"><h1>Твій прогрес — у цифрах</h1><div class="small">Записуй підходи, харчування та власні рекорди.</div></div>
+<div class="grid"><div class="stat"><b id="nW">0</b><span>Тренувань усього</span></div><div class="stat"><b id="nM">0</b><span>Цього місяця</span></div><div class="stat"><b id="nE">0</b><span>Різних вправ</span></div><div class="stat"><b id="nK">0</b><span>Ккал записано сьогодні</span></div><div class="stat"><b id="nP">0 г</b><span>Білок сьогодні</span></div><div class="stat"><b id="nDays">0</b><span>Днів із тренуваннями поспіль*</span></div></div>
+<div class="card" style="margin-top:13px"><div class="sessiontop"><h2 id="monthTitle">Календар</h2><div><button id="prev">‹</button><button id="next">›</button></div></div><div id="calendar" class="calendar"></div><p class="small">Зелений день — збережене тренування.</p></div><div class="card"><h2>Останні тренування</h2><div id="recent"></div></div><div class="card"><h2>Харчування сьогодні</h2><div id="todayFood"></div><button class="primary" onclick="go('food')">Додати їжу</button></div><p class="small">*Серія — просто статистика, не ціль. Відпочинок важливий.</p>
 </section>
-
-<section id="add" class="hidden">
-<div class="panel">
-<h1>Нове тренування</h1>
-<p class="sub">Вкажи дату, вправи та окремі значення для кожного підходу.</p>
-<div class="field" style="max-width:220px">
-<label for="workoutDate">Дата тренування</label>
-<input type="date" id="workoutDate">
-</div>
-<div id="exerciseList"></div>
-<button id="addExercise" style="margin:8px 0">＋ Додати вправу</button>
-<div class="row" style="justify-content:flex-end;margin-top:14px">
-<button class="primary" id="saveWorkout">Зберегти тренування</button>
-</div>
-<p class="hint" id="formMessage"></p>
-</div>
+<section id="workouts" class="page"><div class="card"><h1>Нове тренування</h1><p class="small">Вага й повторення задаються окремо для кожного підходу. Назви вправ запам'ятовуються.</p><div class="field" style="max-width:220px"><label>Дата</label><input id="wDate" type="date"></div><div id="exEditor"></div><button id="addEx">＋ Додати вправу</button> <button id="saveW" class="primary">Зберегти тренування</button><p class="small" id="wMsg"></p></div></section>
+<section id="history" class="page"><div class="card"><h1>Історія тренувань</h1><div id="historyList"></div></div></section>
+<section id="food" class="page">
+<div class="card"><h1>Щоденник харчування</h1><p class="small">Можна внести продукт вручну, скласти рецепт з інгредієнтів або отримати приблизну оцінку типової страви.</p><div class="field" style="max-width:220px"><label>Дата запису</label><input type="date" id="foodDate"></div><hr>
+<h2>Продукт — вручну або з бази</h2><div class="row"><div class="field"><label>Назва</label><input id="fName" list="foods" placeholder="Напр. вівсянка"></div><div class="field"><label>Грами</label><input id="fGrams" type="number" placeholder="100"></div><button id="addFood" class="primary">Додати</button></div><datalist id="foods"></datalist><div class="small" id="fHint"></div><div id="manual" class="hidden foodrow"><b>Значення на 100 г</b><div class="row"><div class="field"><label>Ккал</label><input id="mk" type="number"></div><div class="field"><label>Білки</label><input id="mp" type="number"></div><div class="field"><label>Вуглеводи</label><input id="mc" type="number"></div><div class="field"><label>Жири</label><input id="mf" type="number"></div><button id="manualSave" class="primary">Зберегти</button></div></div>
+<hr><h2>Рецепт за інгредієнтами</h2><div class="small">Додай інгредієнти та вагу в грамах. Поживність підсумується.</div><div id="ingredients"></div><button id="addIng">＋ Інгредієнт</button> <button id="calcRecipe" class="primary">Порахувати</button><div id="recipeOut" class="small"></div>
+<hr><h2>Оцінка за назвою страви</h2><div class="row"><div class="field"><label>Страва</label><input id="dish" placeholder="Напр. борщ, омлет, піца"></div><div class="field"><label>Порція, г</label><input id="dishG" type="number" value="250"></div><button id="estimate" class="primary">Оцінити</button></div><div id="dishOut" class="small"></div><div class="notice">Це не ШІ: оцінка за назвою використовує вбудовані середні значення. Реальна калорійність залежить від рецепта. Для точнішого результату внеси інгредієнти або дані з етикетки.</div></div>
+<div class="card"><div class="sessiontop"><h2>Підсумок дня</h2><input id="sumDate" type="date" style="max-width:155px"></div><div class="grid"><div class="stat"><b id="kcal">0</b><span>Ккал</span></div><div class="stat"><b id="prot">0 г</b><span>Білки</span></div><div class="stat"><b id="carb">0 г</b><span>Вуглеводи</span></div><div class="stat"><b id="fat">0 г</b><span>Жири</span></div></div><div id="foodLog"></div></div>
 </section>
-
-<section id="history" class="hidden">
-<div class="panel"><h1>Історія</h1><div id="historyList"></div></div>
-</section>
-
-<section id="progress" class="hidden">
-<div class="panel">
-<h1>Прогрес за вправами</h1>
-<p class="sub">Порівнюється твій найкращий підхід за показником вага × повторення.</p>
-<div id="progressList"></div>
+<section id="stats" class="page"><div class="card"><h1>Аналітика сили</h1><p class="small">Відстежуй власну динаміку — не порівнюй себе з випадковими людьми з інтернету.</p><label>Вправа</label><select id="whichEx"></select><div id="exStats"></div><canvas id="chart" width="900" height="300"></canvas><div class="notice">Оцінка 1ПМ за формулою Еплі — математична приблизна оцінка, а не заклик перевіряти максимум. Не тестуй максимальні ваги без тренера.</div></div><div class="card"><h2>Особисті рекорди</h2><div id="records"></div></div></section>
+<section id="profile" class="page"><div class="card"><h1>Профіль</h1><div class="row"><div class="field"><label>Ім'я / нік</label><input id="pName"></div><div class="field"><label>Рівень досвіду</label><select id="pLevel"><option>Початківець</option><option>Середній</option><option>Досвідчений</option></select></div></div><div class="row"><div class="field"><label>Тренувань на тиждень (звично)</label><input id="pFreq" type="number" min="1" max="7"></div><div class="field"><label>Тип тренувань</label><select id="pStyle"><option>Силові</option><option>Фітнес</option><option>Змішані</option><option>Інше</option></select></div></div><button id="saveProfile" class="primary">Зберегти профіль</button><div id="pSummary" class="small"></div><div class="notice">Не показуємо рейтинг «кращий за інших»: робочі ваги залежать від віку, досвіду, техніки й обладнання. Корисніше бачити власні рекорди та поступову динаміку.</div></div>
+<div class="card"><h2>Резервна копія</h2><p class="small">Експортуй історію у JSON. Збережи файл у «Файли» або iCloud. Імпорт замінює поточні дані.</p><button id="export" class="primary">Експорт даних</button><div class="field" style="margin-top:10px"><label>Імпорт JSON</label><input type="file" id="import" accept=".json,application/json"></div><p id="backupMsg" class="small"></p></div><div class="card"><button id="clear" class="danger">Видалити всі дані</button></div></section>
+<div class="footer">FORGE · Зберігання лише в цьому браузері на цьому пристрої. Експортуй резервну копію час від часу.</div>
 </div>
-</section>
-
-<div class="notice">Порівнюй однакову вправу з однаковою технікою та амплітудою. Відсоток — це зміна твого записаного результату, а не оцінка сили відносно інших людей.</div>
-</div>
-
 <script>
-const $=s=>document.querySelector(s);
-let workouts=JSON.parse(localStorage.getItem('gymprogress_v1')||'[]');
-let calDate=new Date();
-let draftCount=0;
-const today=()=>new Date().toISOString().slice(0,10);
-
-$('#workoutDate').value=today();
-
-function save(){
-localStorage.setItem('gymprogress_v1',JSON.stringify(workouts));
-$('#saveStatus').textContent='Збережено ✓';
-}
-
-function showTab(name){
-document.querySelectorAll('section').forEach(s=>s.classList.toggle('hidden',s.id!==name));
-document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
-renderAll();
-}
-
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
-
-function escapeHtml(s){
-return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-function addExercise(name=''){
-draftCount++;
-const box=document.createElement('div');
-box.className='exercise';
-box.innerHTML=`
-<div class="row">
-<div class="field">
-<label>Назва вправи</label>
-<input class="exname" placeholder="Напр. Жим у тренажері" value="${escapeHtml(name)}">
-</div>
-<button class="small danger removeExercise">Видалити</button>
-</div>
-<div class="sets"></div>
-<button class="small addSet" style="margin-top:8px">＋ Додати підхід</button>`;
-$('#exerciseList').append(box);
-box.querySelector('.addSet').onclick=()=>addSet(box);
-box.querySelector('.removeExercise').onclick=()=>box.remove();
-addSet(box);
-addSet(box);
-}
-
-function addSet(box,w='',r=''){
-const n=box.querySelectorAll('.setrow').length+1;
-const row=document.createElement('div');
-row.className='setrow';
-row.innerHTML=`
-<div class="setnum">${n}</div>
-<div><label>Вага, кг</label><input class="weight" type="number" min="0" step="0.25" placeholder="0" value="${w}"></div>
-<div><label>Повторення</label><input class="reps" type="number" min="1" step="1" placeholder="0" value="${r}"></div>
-<button class="small danger delSet">×</button>`;
-row.querySelector('.delSet').onclick=()=>{
-row.remove();
-renumber(box);
-};
-box.querySelector('.sets').append(row);
-}
-
-function renumber(box){
-box.querySelectorAll('.setnum').forEach((e,i)=>e.textContent=i+1);
-}
-
-$('#addExercise').onclick=()=>addExercise();
-addExercise();
-
-$('#saveWorkout').onclick=()=>{
-const date=$('#workoutDate').value;
-const exercises=[];
-
-document.querySelectorAll('#exerciseList .exercise').forEach(box=>{
-const name=box.querySelector('.exname').value.trim();
-const sets=[...box.querySelectorAll('.setrow')].map(r=>({
-weight:Number(r.querySelector('.weight').value),
-reps:Number(r.querySelector('.reps').value)
-})).filter(s=>s.weight>0&&s.reps>0);
-
-if(name&&sets.length)exercises.push({name,sets});
-});
-
-if(!date||!exercises.length){
-$('#formMessage').textContent='Вкажи дату, назву вправи та хоча б один заповнений підхід.';
-return;
-}
-
-workouts.push({id:Date.now(),date,exercises});
-workouts.sort((a,b)=>a.date.localeCompare(b.date));
-save();
-$('#formMessage').textContent='Тренування збережено!';
-$('#exerciseList').innerHTML='';
-addExercise();
-$('#workoutDate').value=today();
-showTab('dashboard');
-};
-
-function allNames(){
-return [...new Set(workouts.flatMap(w=>w.exercises.map(e=>e.name)))];
-}
-
-function score(ex){
-return Math.max(...ex.sets.map(s=>s.weight*s.reps));
-}
-
-function fmtDate(d){
-return new Date(d+'T12:00:00').toLocaleDateString('uk-UA',{day:'numeric',month:'short',year:'numeric'});
-}
-
-function renderCalendar(){
-const y=calDate.getFullYear(),m=calDate.getMonth();
-$('#monthLabel').textContent=calDate.toLocaleDateString('uk-UA',{month:'long',year:'numeric'});
-const first=new Date(y,m,1).getDay();
-const offset=(first+6)%7;
-const days=new Date(y,m+1,0).getDate();
-const done=new Set(workouts.map(w=>w.date));
-let out=['Пн','Вт','Ср','Чт','Пт','Сб','Нд'].map(x=>`<div class="dayname">${x}</div>`).join('');
-
-for(let i=0;i<offset;i++)out+='<div class="day blank"></div>';
-
-for(let d=1;d<=days;d++){
-const key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-out+=`<div class="day ${done.has(key)?'done':''} ${key===today()?'today':''}">${d}${done.has(key)?' ✓':''}</div>`;
-}
-$('#calendar').innerHTML=out;
-}
-
-$('#prevMonth').onclick=()=>{
-calDate.setMonth(calDate.getMonth()-1);
-renderCalendar();
-};
-
-$('#nextMonth').onclick=()=>{
-calDate.setMonth(calDate.getMonth()+1);
-renderCalendar();
-};
-
-function workoutHtml(w,del=false){
-return `<div class="session">
-<div class="session-title">
-<strong>${fmtDate(w.date)}</strong>
-${del?`<button class="small danger" onclick="deleteWorkout(${w.id})">Видалити</button>`:'<span class="pill">Тренування</span>'}
-</div>
-${w.exercises.map(e=>`
-<div style="margin-top:8px">
-<b>${escapeHtml(e.name)}</b>
-<div class="hint">${e.sets.map((s,i)=>`П${i+1}: ${s.weight} кг × ${s.reps}`).join('　·　')}</div>
-</div>`).join('')}
-</div>`;
-}
-
-function deleteWorkout(id){
-if(confirm('Видалити це тренування?')){
-workouts=workouts.filter(w=>w.id!==id);
-save();
-renderAll();
-}
-}
-
-function renderAll(){
-$('#totalWorkouts').textContent=workouts.length;
-const ym=today().slice(0,7);
-$('#monthWorkouts').textContent=workouts.filter(w=>w.date.startsWith(ym)).length;
-$('#exerciseCount').textContent=allNames().length;
-renderCalendar();
-
-const recent=[...workouts].reverse().slice(0,3);
-$('#recent').innerHTML=recent.length?recent.map(w=>workoutHtml(w)).join(''):'<div class="empty">Поки немає тренувань. Додай перше!</div>';
-
-const sorted=[...workouts].reverse();
-$('#historyList').innerHTML=sorted.length?sorted.map(w=>workoutHtml(w,true)).join(''):'<div class="empty">Історія поки порожня.</div>';
-
-const names=allNames();
-$('#progressList').innerHTML=names.length?names.map(name=>{
-const entries=workouts.flatMap(w=>w.exercises.filter(e=>e.name.toLowerCase()===name.toLowerCase()).map(e=>({date:w.date,score:score(e)}))).sort((a,b)=>a.date.localeCompare(b.date));
-const first=entries[0];
-const best=entries.reduce((a,b)=>b.score>a.score?b:a,entries[0]);
-const latest=entries[entries.length-1];
-const change=first.score?((best.score/first.score)-1)*100:0;
-
-return `<div class="session">
-<div class="session-title">
-<b>${escapeHtml(name)}</b>
-<span class="pill">${change>=0?'+':''}${change.toFixed(1)}% від першого запису</span>
-</div>
-<div class="hint">Перший: ${first.score.toFixed(1)} · Найкращий: ${best.score.toFixed(1)} · Останній: ${latest.score.toFixed(1)} кг × повторення</div>
-<div class="progressbar"><i style="width:${Math.max(2,Math.min(100,100+change))}%"></i></div>
-<div class="hint">Останній запис: ${fmtDate(latest.date)}. Показник = вага × повторення.</div>
-</div>`;
-}).join(''):'<div class="empty">Додай кілька тренувань, щоб побачити динаміку.</div>';
-}
-
-renderAll();
-</script>
-</body>
-</html>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],today=()=>new Date().toISOString().slice(0,10),KEY='forge_tracker_v2';
+const db={'вівсянка':[389,16.9,66.3,6.9],'банан':[89,1.1,22.8,.3],'яблуко':[52,.3,13.8,.2],'яйце':[143,12.6,.7,9.5],'куряче філе':[165,31,0,3.6],'курка':[165,31,0,3.6],'рис варений':[130,2.7,28,.3],'рис сухий':[365,7.1,80,.7],'гречка варена':[110,4,21,1.1],'гречка суха':[343,13.3,71.5,3.4],'картопля варена':[87,1.9,20.1,.1],'макарони варені':[157,5.8,30.9,.9],'хліб білий':[266,8.9,49,3.2],'сир кисломолочний':[121,17,3,5],'молоко':[61,3.2,4.8,3.3],'йогурт натуральний':[63,5.3,7,1.6],'сир твердий':[350,25,2,27],'лосось':[208,20,0,13],'тунець':[132,28,0,1],'оливкова олія':[884,0,0,100],'арахісова паста':[588,25,20,50],'мигдаль':[579,21,22,50],'помідор':[18,.9,3.9,.2],'огірок':[15,.7,3.6,.1],'авокадо':[160,2,8.5,14.7],'квасоля варена':[127,8.7,22.8,.5],'протеїн сироватковий':[400,80,8,6]};
+const dishes={'борщ':[55,2.5,7,2],'омлет':[154,10.6,1.6,11.7],'піца':[266,11,33,10],'плов':[180,5,25,7],'салат цезар':[160,8,10,10],'суп курячий':[45,3,5,1.5],'млинці':[227,6,30,9],'вареники':[190,6,32,4],'суші':[150,6,28,2],'бургер':[250,13,25,11],'шаурма':[210,12,22,8],'паста карбонара':[220,9,25,9],'картопля фрі':[312,3.4,41,15],'грецький салат':[100,3,5,8]};
+let D;try{D=JSON.parse(localStorage.getItem(KEY))||{workouts:[],foods:[],names:[],profile:{}}}catch(e){D={workouts:[],foods:[],names:[],profile:{}}}let month=new Date();
+function save(){localStorage.setItem(KEY,JSON.stringify(D));$('#saveState').textContent='Збережено ✓'}
+function go(id){$$('.page').forEach(x=>x.classList.toggle('active',x.id===id));$$('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(id==='stats')renderStats();if(id==='food')renderFood();if(id==='profile')renderProfile();window.scrollTo(0,0)}
+$$('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmt(d){return new Date(d+'T12:00:00').toLocaleDateString('uk-UA',{day:'numeric',month:'short',year:'numeric'})}
+function names(){return [...new Set(D.workouts.flatMap(w=>w.exercises.map(e=>e.name)))].sort()}
+function addEx(name=''){let box=document.createElement('div');box.className='exercise';box.innerHTML=`<div class="row"><div class="field"><label>Вправа</label><input class="exname" list="exNames" placeholder="Напр. Жим лежачи" value="${safe(name)}"><datalist id="exNames">${D.names.map(n=>`<option value="${safe(n)}">`).join('')}</datalist></div><button class="danger remove">Видалити</button></div><div class="sets"></div><button class="addSet">＋ Підхід</button>`;$('#exEditor').append(box);box.querySelector('.remove').onclick=()=>box.remove();box.querySelector('.addSet').onclick=()=>addSet(box);addSet(box);addSet(box)}
+function addSet(box,w='',r=''){let s=document.createElement('div');s.className='set';s.innerHTML=`<div class="setnum">${box.querySelectorAll('.set').length+1}</div><div><label>Вага, кг</label><input class="sw" type="number" min="0" step=".25" value="${w}" placeholder="0"></div><div><label>Повтори</label><input class="sr" type="number" min="1" value="${r}" placeholder="0"></div><button class="danger">×</button>`;s.querySelector('button').onclick=()=>{s.remove();[...box.querySelectorAll('.setnum')].forEach((n,i)=>n.textContent=i+1)};box.querySelector('.sets').append(s)}
+$('#addEx').onclick=()=>addEx();addEx();$('#wDate').value=today();
+$('#saveW').onclick=()=>{let ex=[];$$('#exEditor .exercise').forEach(b=>{let name=$('.exname',b).value.trim(),sets=$$('.set',b).map(s=>({weight:+$('.sw',s).value,reps:+$('.sr',s).value})).filter(s=>s.weight>0&&s.reps>0);if(name&&sets.length){ex.push({name,sets});if(!D.names.some(n=>n.toLowerCase()===name.toLowerCase()))D.names.push(name)}});if(!ex.length||!$('#wDate').value){$('#wMsg').textContent='Вкажи дату, вправу та хоча б один заповнений підхід.';return}D.workouts.push({id:Date.now(),date:$('#wDate').value,exercises:ex});D.workouts.sort((a,b)=>a.date.localeCompare(b.date));save();$('#exEditor').innerHTML='';addEx();$('#wMsg').textContent='Збережено!';renderHome();renderHistory();go('home')};
+function wcard(w,del=false){return `<div class="session"><div class="sessiontop"><b>${fmt(w.date)}</b>${del?`<button class="danger" onclick="delW(${w.id})">Видалити</button>`:'<span class="pill">Тренування</span>'}</div>${w.exercises.map(e=>`<div><b>${safe(e.name)}</b><div class="small">${e.sets.map((s,i)=>`П${i+1}: ${s.weight} кг × ${s.reps}`).join(' · ')}</div></div>`).join('')}</div>`}
+function delW(id){if(confirm('Видалити тренування?')){D.workouts=D.workouts.filter(w=>w.id!==id);save();renderHome();renderHistory();renderStats()}}
+function renderHistory(){$('#historyList').innerHTML=D.workouts.length?[...D.workouts].reverse().map(w=>wcard(w,true)).join(''):'<div class="empty">Історія поки порожня.</div>'}
+function calendar(){let y=month.getFullYear(),m=month.getMonth(),offset=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate(),done=new Set(D.workouts.map(w=>w.date));$('#monthTitle').textContent=month.toLocaleDateString('uk-UA',{month:'long',year:'numeric'});let h=['Пн','Вт','Ср','Чт','Пт','Сб','Нд'].map(x=>`<div class="weekday">${x}</div>`).join('');for(let i=0;i<offset;i++)h+='<div></div>';for(let d=1;d<=days;d++){let k=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;h+=`<div class="day ${done.has(k)?'done':''} ${k===today()?'today':''}">${d}${done.has(k)?' ✓':''}</div>`}$('#calendar').innerHTML=h}
+$('#prev').onclick=()=>{month.setMonth(month.getMonth()-1);calendar()};$('#next').onclick=()=>{month.setMonth(month.getMonth()+1);calendar()};
+function renderHome(){let ws=D.workouts,foods=D.foods.filter(f=>f.date===today());$('#nW').textContent=ws.length;$('#nM').textContent=ws.filter(w=>w.date.slice(0,7)===today().slice(0,7)).length;$('#nE').textContent=names().length;$('#nK').textContent=Math.round(foods.reduce((a,f)=>a+f.k,0));$('#nP').textContent=Math.round(foods.reduce((a,f)=>a+f.p,0))+' г';let ds=[...new Set(ws.map(w=>w.date))].sort().reverse(),d=new Date(today()+'T12:00:00'),st=0;if(!ds.includes(today()))d.setDate(d.getDate()-1);while(ds.includes(d.toISOString().slice(0,10))){st++;d.setDate(d.getDate()-1)}$('#nDays').textContent=st;calendar();$('#recent').innerHTML=ws.length?[...ws].reverse().slice(0,3).map(w=>wcard(w)).join(''):'<div class="empty">Додай перше тренування.</div>';$('#todayFood').textContent=foods.length?`${Math.round(foods.reduce((a,f)=>a+f.k,0))} ккал · Білок ${Math.round(foods.reduce((a,f)=>a+f.p,0))} г · ${foods.length} записів`:'Ще немає записів за сьогодні.'}
+function vals(name){return db[name.trim().toLowerCase()]||null}
+function addFood(name,g,v,date=$('#foodDate').value){let q=g/100;D.foods.push({id:Date.now()+Math.random(),date,name,g,k:v[0]*q,p:v[1]*q,c:v[2]*q,f:v[3]*q});save();renderFood();renderHome()}
+$('#addFood').onclick=()=>{let n=$('#fName').value.trim(),g=+$('#fGrams').value,v=vals(n);if(!n||g<=0){$('#fHint').textContent='Вкажи назву та грами.';return}if(!v){$('#manual').classList.remove('hidden');$('#fHint').textContent='Немає в базі — введи значення з етикетки на 100 г.';return}addFood(n,g,v);$('#fName').value='';$('#fGrams').value='';$('#fHint').textContent='Додано приблизний розрахунок.'};
+$('#manualSave').onclick=()=>{let n=$('#fName').value.trim(),g=+$('#fGrams').value,v=['mk','mp','mc','mf'].map(id=>+$('#'+id).value);if(!n||g<=0||v.some(x=>!Number.isFinite(x)||x<0))return alert('Перевір дані');addFood(n,g,v);$('#manual').classList.add('hidden');$('#fName').value='';$('#fGrams').value=''};
+function addIng(){let r=document.createElement('div');r.className='row ingredient';r.innerHTML=`<div class="field"><label>Продукт</label><input class="iname" list="foods" placeholder="Назва"></div><div class="field"><label>Грами</label><input class="igram" type="number" placeholder="100"></div><button class="danger">×</button>`;r.querySelector('button').onclick=()=>r.remove();$('#ingredients').append(r)}
+$('#addIng').onclick=addIng;addIng();
+$('#calcRecipe').onclick=()=>{let sum=[0,0,0,0],unknown=[];$$('.ingredient').forEach(r=>{let n=$('.iname',r).value.trim(),g=+$('.igram',r).value,v=vals(n);if(n&&g>0){if(v)v.forEach((x,i)=>sum[i]+=x*g/100);else unknown.push(n)}});if(unknown.length||!sum.some(Boolean)){$('#recipeOut').textContent=unknown.length?'Немає даних для: '+unknown.join(', '):'Додай інгредієнти.';return}$('#recipeOut').innerHTML=`Увесь рецепт: <b>${Math.round(sum[0])} ккал</b> · Б ${sum[1].toFixed(1)} г · В ${sum[2].toFixed(1)} г · Ж ${sum[3].toFixed(1)} г <button id="saveRecipe" class="primary">Додати рецепт у день</button>`;$('#saveRecipe').onclick=()=>{let n=prompt('Назва рецепта?','Мій рецепт');if(n)addFood(n,100,sum)}};
+$('#estimate').onclick=()=>{let n=$('#dish').value.trim().toLowerCase(),g=+$('#dishG').value,v=dishes[n];if(!v||g<=0){$('#dishOut').textContent='Немає такої страви у вбудованому списку або некоректна вага. Спробуй інгредієнти.';return}let q=g/100,s=v.map(x=>x*q);$('#dishOut').innerHTML=`Приблизно <b>${Math.round(s[0])} ккал</b> · Б ${s[1].toFixed(1)} г · В ${s[2].toFixed(1)} г · Ж ${s[3].toFixed(1)} г <button id="addDish" class="primary">Додати</button>`;$('#addDish').onclick=()=>addFood($('#dish').value,g,v)};
+function renderFood(){let opts=[...new Set([...Object.keys(db),...D.foods.map(f=>f.name)])];$('#foods').innerHTML=opts.map(n=>`<option value="${safe(n)}">`).join('');let date=$('#sumDate').value||today(),fs=D.foods.filter(f=>f.date===date),s=fs.reduce((a,f)=>{a.k+=f.k;a.p+=f.p;a.c+=f.c;a.f+=f.f;return a},{k:0,p:0,c:0,f:0});$('#kcal').textContent=Math.round(s.k);$('#prot').textContent=Math.round(s.p)+' г';$('#carb').textContent=Math.round(s.c)+' г';$('#fat').textContent=Math.round(s.f)+' г';$('#foodLog').innerHTML=fs.length?fs.map(f=>`<div class="session sessiontop"><div><b>${safe(f.name)}</b><div class="small">${f.g} г · ${Math.round(f.k)} ккал · Б ${f.p.toFixed(1)} / В ${f.c.toFixed(1)} / Ж ${f.f.toFixed(1)} г</div></div><button class="danger" onclick="delFood('${f.id}')">×</button></div>`).join(''):'<div class="empty">Немає записів на цю дату.</div>'}
+function delFood(id){D.foods=D.foods.filter(f=>String(f.id)!==String(id));save();renderFood();renderHome()}$('#foodDate').value=today();$('#sumDate').value=today();$('#sumDate').onchange=renderFood;
+function renderStats(){let ns=names();$('#whichEx').innerHTML=ns.length?ns.map(n=>`<option>${safe(n)}</option>`).join(''):'<option>Немає вправ</option>';$('#whichEx').onchange=drawStats;drawStats();let rec={};ns.forEach(n=>D.workouts.forEach(w=>w.exercises.filter(e=>e.name===n).forEach(e=>e.sets.forEach(s=>{let z=s.weight*s.reps;if(!rec[n]||z>rec[n].z)rec[n]={z,s,date:w.date}}))));$('#records').innerHTML=Object.keys(rec).length?Object.entries(rec).map(([n,r])=>`<div class="session"><b>${safe(n)}</b><div class="small">Найкращий підхід: ${r.s.weight} кг × ${r.s.reps} · ${fmt(r.date)}</div></div>`).join(''):'<div class="empty">Рекорди з’являться після тренувань.</div>'}
+function drawStats(){let n=$('#whichEx').value,es=D.workouts.flatMap(w=>w.exercises.filter(e=>e.name===n).map(e=>({date:w.date,set:e.sets.reduce((a,b)=>a.weight*a.reps>b.weight*b.reps?a:b),vol:e.sets.reduce((a,s)=>a+s.weight*s.reps,0)}))).sort((a,b)=>a.date.localeCompare(b.date));if(!es.length){$('#exStats').innerHTML='<div class="empty">Додай тренування з цією вправою.</div>';drawChart([]);return}let f=es[0],best=es.reduce((a,b)=>a.set.weight*a.set.reps>b.set.weight*b.set.reps?a:b),last=es[es.length-1],pct=(best.set.weight*best.set.reps/(f.set.weight*f.set.reps)-1)*100,one=best.set.weight*(1+best.set.reps/30);$('#exStats').innerHTML=`<div class="grid"><div class="stat"><b>${best.set.weight}×${best.set.reps}</b><span>Найкращий підхід</span></div><div class="stat"><b>${pct>=0?'+':''}${pct.toFixed(1)}%</b><span>Зміна від першого запису</span></div><div class="stat"><b>${one.toFixed(1)} кг</b><span>Оцінка 1ПМ</span></div></div><p class="small">Останній запис ${fmt(last.date)} · Обсяг останнього заняття ${last.vol.toFixed(0)} кг-повторень.</p>`;drawChart(es)}
+function drawChart(es){let c=$('#chart'),x=c.getContext('2d'),W=c.width,H=c.height;x.clearRect(0,0,W,H);x.strokeStyle='#304136';for(let i=0;i<5;i++){let y=20+i*(H-50)/4;x.beginPath();x.moveTo(45,y);x.lineTo(W-15,y);x.stroke()}if(!es.length){x.fillStyle='#9daf9f';x.fillText('Додай записи, щоб побачити графік',55,150);return}let a=es.map(e=>e.set.weight*e.set.reps),lo=Math.min(...a),hi=Math.max(...a);if(lo===hi){lo*=.9;hi*=1.1}x.strokeStyle='#74e39a';x.lineWidth=3;x.beginPath();a.forEach((v,i)=>{let px=55+(a.length===1?0:i*(W-90)/(a.length-1)),py=H-30-(v-lo)/(hi-lo)*(H-70);if(i===0)x.moveTo(px,py);else x.lineTo(px,py);x.fillStyle='#74e39a';x.beginPath();x.arc(px,py,4,0,7);x.fill();x.fillStyle='#9daf9f';x.fillText(Math.round(v),px-8,py-10)});x.stroke()}
+function renderProfile(){let p=D.profile||{};$('#pName').value=p.name||'';$('#pLevel').value=p.level||'Початківець';$('#pFreq').value=p.freq||'';$('#pStyle').value=p.style||'Силові';$('#pSummary').textContent=`${p.name||'Твій профіль'} · ${p.level||'Початківець'} · У журналі ${D.workouts.length} тренувань і ${names().length} вправ.`}
+$('#saveProfile').onclick=()=>{D.profile={name:$('#pName').value,level:$('#pLevel').value,freq:$('#pFreq').value,style:$('#pStyle').value};save();renderProfile()};
+$('#export').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(D,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='forge-backup-'+today()+'.json';a.click();URL.revokeObjectURL(u);$('#backupMsg').textContent='Резервну копію завантажено.'};
+$('#import').onchange=async e=>{try{let d=JSON.parse(await e.target.files[0].text());if(!Array.isArray(d.workouts)||!Array.isArray(d.foods))throw 0;if(confirm('Замінити поточні дані?')){D=d;save();init();$('#backupMsg').textContent='Імпортовано.'}}catch(x){$('#backupMsg').textContent='Не вдалося прочитати файл.'}};
+$('#clear').onclick=()=>{if(confirm('Видалити всі тренування, їжу та профіль?')){localStorage.removeItem(KEY);location.reload()}};
+function init(){renderHome();renderHistory();renderFood();renderProfile()}init();
+</script></body></html>
